@@ -9,6 +9,7 @@ export type Course = {
   color: string | null;
   position: number;
   created_at: string;
+  summary?: unknown;
 };
 
 export type Module = {
@@ -17,6 +18,7 @@ export type Module = {
   user_id: string;
   title: string;
   position: number;
+  summary?: unknown;
 };
 
 export type LessonStatus = "not_started" | "in_progress" | "completed" | "mastered";
