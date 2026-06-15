@@ -262,6 +262,66 @@ ${truncate(kb, 22000)}`;
     return { answer: text };
   });
 
+// ─── Concept Map ────────────────────────────────────────────────────
+
+export const generateConceptMapFn = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { courseId: string; central?: string }) =>
+    z.object({ courseId: z.string().uuid(), central: z.string().max(200).optional() }).parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    const course = await getCourse(context, data.courseId);
+    if (!course) throw new Error("Curso não encontrado.");
+    const text = await buildCourseContext(context, data.courseId);
+    const { data: lessons } = await context.supabase
+      .from("lessons").select("id,title").eq("course_id", data.courseId);
+    const lessonList = (lessons ?? []).map((l) => `- ${l.id} :: ${l.title}`).join("\n");
+    const g = createGateway(key());
+    const prompt = `És um cartógrafo de conhecimento académico. Constrói um mapa de conceitos hierárquico para o curso "${course.name}".
+Conceito central pedido: "${data.central || course.name}".
+Devolve APENAS JSON estrito (sem markdown) no formato:
+{
+  "central": "string",
+  "subconceitos": [
+    {
+      "label": "string",
+      "descricao": "string curta",
+      "relacionados": [
+        {
+          "label": "string",
+          "descricao": "string curta",
+          "aulas": [{ "lesson_id": "uuid-da-lista-abaixo", "title": "string" }]
+        }
+      ]
+    }
+  ]
+}
+Regras:
+- Entre 4 e 7 subconceitos. Entre 2 e 4 relacionados por subconceito.
+- Cada "lesson_id" deve corresponder EXACTAMENTE a um id da lista de aulas. Se uma aula não se aplica, omite-a.
+- Usa apenas conteúdos da matéria do utilizador.
+
+AULAS DISPONÍVEIS (id :: título):
+${lessonList}
+
+CONTEÚDO DO CURSO:
+${truncate(text, 16000)}`;
+    const { text: out } = await generateText({ model: g(DEFAULT_MODEL), prompt });
+    const json = safeJson(out);
+    await context.supabase.from("concept_maps")
+      .upsert({ user_id: (context as unknown as { userId: string }).userId, course_id: data.courseId, data: json as never }, { onConflict: "course_id" });
+    return json;
+  });
+
+export const getConceptMapFn = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { courseId: string }) => z.object({ courseId: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { data: row } = await context.supabase
+      .from("concept_maps").select("data,updated_at").eq("course_id", data.courseId).maybeSingle();
+    return row ?? null;
+  });
+
 function safeJson(s: string): JsonObject {
   // Strip fenced code blocks if any
   const cleaned = s.trim().replace(/^```(?:json)?/i, "").replace(/```$/, "").trim();

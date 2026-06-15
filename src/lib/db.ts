@@ -38,6 +38,9 @@ export type Lesson = {
   completed_at: string | null;
   updated_at: string;
   summary?: unknown;
+  test?: unknown;
+  case_study?: unknown;
+  essay?: unknown;
 };
 
 export type NoteItem = {
