@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { getLesson, getCourse, listModules, updateLesson, type Lesson, type LessonStatus, type NoteItem } from "@/lib/db";
 import { summarizeLessonFn } from "@/lib/ai.functions";
-import { TopicsEditor, type Topic } from "@/components/topics-editor";
+import { TopicsEditor } from "@/components/topics-editor";
 import { DocumentsTab } from "@/components/documents-tab";
 import { SummaryCard } from "@/components/summary-card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
