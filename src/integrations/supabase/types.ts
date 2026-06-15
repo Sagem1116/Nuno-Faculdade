@@ -149,6 +149,7 @@ export type Database = {
       }
       lessons: {
         Row: {
+          apontamentos: Json | null
           case_study: Json | null
           completed_at: string | null
           content: Json | null
@@ -169,6 +170,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          apontamentos?: Json | null
           case_study?: Json | null
           completed_at?: string | null
           content?: Json | null
@@ -189,6 +191,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          apontamentos?: Json | null
           case_study?: Json | null
           completed_at?: string | null
           content?: Json | null

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { TiptapEditor } from "./tiptap-editor";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Trash2, ChevronUp, ChevronDown } from "lucide-react";
+import { Plus, Trash2, ChevronUp, ChevronDown, ChevronRight } from "lucide-react";
 import { SortableList } from "@/components/sortable";
 import { toast } from "sonner";
 
@@ -63,6 +63,7 @@ export function TopicsEditor({ value, onChange, placeholder, legacyTitle, storag
   const [topics, setTopics] = useState<Topic[]>(() => normalize(value, legacyTitle));
   const [recoverable, setRecoverable] = useState<{ topics: Topic[]; savedAt: number } | null>(null);
   const [savedAt, setSavedAt] = useState<number | null>(null);
+  const [openIds, setOpenIds] = useState<Set<string>>(() => new Set());
   const draftKey = storageKey ? `topics-draft:${storageKey}` : null;
 
   // Detect recoverable draft on mount (only if newer than committed value).
@@ -106,7 +107,13 @@ export function TopicsEditor({ value, onChange, placeholder, legacyTitle, storag
     commit(topics.map((t) => (t.id === id ? { ...t, ...patch } : t)));
 
   const add = () =>
-    commit([...topics, { id: crypto.randomUUID(), title: "", content: null }]);
+    setTopics((prev) => {
+      const id = crypto.randomUUID();
+      const next = [...prev, { id, title: "", content: null }];
+      setOpenIds((s) => new Set(s).add(id));
+      commit(next);
+      return next;
+    });
 
   const remove = (id: string) => {
     if (topics.length <= 1) {
@@ -126,6 +133,15 @@ export function TopicsEditor({ value, onChange, placeholder, legacyTitle, storag
   };
 
   const memoTopics = useMemo(() => topics, [topics]);
+
+  const toggle = (id: string) =>
+    setOpenIds((s) => {
+      const n = new Set(s);
+      if (n.has(id)) n.delete(id); else n.add(id);
+      return n;
+    });
+  const expandAll = () => setOpenIds(new Set(memoTopics.map((t) => t.id)));
+  const collapseAll = () => setOpenIds(new Set());
 
   return (
     <div className="space-y-6">
@@ -154,19 +170,46 @@ export function TopicsEditor({ value, onChange, placeholder, legacyTitle, storag
         onReorder={(next) => commit(next)}
         renderItem={(t, dragHandle) => {
           const idx = memoTopics.findIndex((x) => x.id === t.id);
+          const isOpen = openIds.has(t.id);
+          const preview = previewOf(t.content);
           return (
             <div className="gold-frame rounded-md bg-card overflow-hidden">
               <div className="flex items-center gap-2 border-b bg-card/60 px-3 py-2">
                 {dragHandle}
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="h-7 w-7 shrink-0"
+                  onClick={() => toggle(t.id)}
+                  title={isOpen ? "Colapsar" : "Expandir"}
+                  aria-expanded={isOpen}
+                >
+                  {isOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                </Button>
                 <span className="font-display text-xs uppercase tracking-[0.18em] text-gold px-1">
                   §{idx + 1}
                 </span>
-                <Input
-                  value={t.title}
-                  onChange={(e) => update(t.id, { title: e.target.value })}
-                  placeholder="Título do tópico (opcional)"
-                  className="border-0 bg-transparent font-display text-lg shadow-none focus-visible:ring-0 px-1"
-                />
+                {isOpen ? (
+                  <Input
+                    value={t.title}
+                    onChange={(e) => update(t.id, { title: e.target.value })}
+                    placeholder="Título do tópico (opcional)"
+                    className="border-0 bg-transparent font-display text-lg shadow-none focus-visible:ring-0 px-1"
+                  />
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => toggle(t.id)}
+                    className="flex-1 min-w-0 text-left px-1 py-0.5 group"
+                  >
+                    <span className="font-display text-lg group-hover:text-burgundy block truncate">
+                      {t.title?.trim() || <em className="text-muted-foreground">Sem título</em>}
+                    </span>
+                    {preview && (
+                      <span className="block text-xs text-muted-foreground truncate">{preview}</span>
+                    )}
+                  </button>
+                )}
                 <div className="ml-auto flex items-center gap-1">
                   <Button size="icon" variant="ghost" onClick={() => move(t.id, -1)} disabled={idx === 0} title="Subir prioridade">
                     <ChevronUp className="h-4 w-4" />
@@ -179,17 +222,25 @@ export function TopicsEditor({ value, onChange, placeholder, legacyTitle, storag
                   </Button>
                 </div>
               </div>
-              <TopicEditor
-                value={t.content}
-                placeholder={placeholder}
-                onChange={(c) => update(t.id, { content: c })}
-              />
+              {isOpen && (
+                <TopicEditor
+                  value={t.content}
+                  placeholder={placeholder}
+                  onChange={(c) => update(t.id, { content: c })}
+                />
+              )}
             </div>
           );
         }}
       />
 
-      <div className="flex justify-center">
+      <div className="flex justify-center gap-2">
+        <Button onClick={expandAll} variant="ghost" size="sm" disabled={openIds.size === memoTopics.length}>
+          Expandir tudo
+        </Button>
+        <Button onClick={collapseAll} variant="ghost" size="sm" disabled={openIds.size === 0}>
+          Colapsar tudo
+        </Button>
         <Button onClick={add} variant="outline" className="gold-frame">
           <Plus className="h-4 w-4 mr-2" /> Adicionar tópico
         </Button>
@@ -209,4 +260,21 @@ function TopicEditor({ value, placeholder, onChange }: { value: unknown; placeho
       <TiptapEditor value={value} onChange={onChange} placeholder={placeholder} minHeight="20vh" />
     </div>
   );
+}
+
+function previewOf(content: unknown, max = 140): string {
+  const txt = extractText(content).replace(/\s+/g, " ").trim();
+  return txt.length > max ? txt.slice(0, max) + "…" : txt;
+}
+
+function extractText(node: unknown): string {
+  if (!node) return "";
+  if (typeof node === "string") return node;
+  if (Array.isArray(node)) return node.map(extractText).join(" ");
+  if (typeof node !== "object") return "";
+  const n = node as { text?: string; content?: unknown };
+  let out = "";
+  if (typeof n.text === "string") out += n.text + " ";
+  if (n.content) out += extractText(n.content);
+  return out;
 }
