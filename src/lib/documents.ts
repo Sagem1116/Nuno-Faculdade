@@ -51,8 +51,7 @@ async function extractTextFromFile(file: File): Promise<string> {
   }
   if (name.endsWith(".pdf") || file.type === "application/pdf") {
     const pdfjs = await import("pdfjs-dist");
-    // @ts-expect-error worker import
-    const worker = await import("pdfjs-dist/build/pdf.worker.min.mjs?url");
+    const worker = (await import("pdfjs-dist/build/pdf.worker.min.mjs?url" as string)) as { default: string };
     pdfjs.GlobalWorkerOptions.workerSrc = worker.default;
     const data = await file.arrayBuffer();
     const pdf = await pdfjs.getDocument({ data }).promise;
@@ -60,7 +59,7 @@ async function extractTextFromFile(file: File): Promise<string> {
     for (let i = 1; i <= pdf.numPages; i++) {
       const page = await pdf.getPage(i);
       const tc = await page.getTextContent();
-      out += tc.items.map((it: { str?: string }) => it.str ?? "").join(" ") + "\n";
+      out += tc.items.map((it) => ("str" in it ? it.str : "")).join(" ") + "\n";
     }
     return out;
   }

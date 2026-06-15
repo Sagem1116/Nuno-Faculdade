@@ -226,7 +226,11 @@ OCORRÊNCIAS:
 ${truncate(corpus, 14000)}`,
     });
     const synth = safeJson(out) as { resumo_consolidado?: string; ideias_relacionadas?: string[] };
-    return { occurrences, ...synth };
+    return {
+      occurrences,
+      resumo_consolidado: synth.resumo_consolidado ?? "",
+      ideias_relacionadas: synth.ideias_relacionadas ?? [],
+    };
   });
 
 export const askAssistantFn = createServerFn({ method: "POST" })
@@ -255,12 +259,12 @@ ${truncate(kb, 22000)}`;
     return { answer: text };
   });
 
-function safeJson(s: string): unknown {
+function safeJson(s: string): Record<string, unknown> {
   // Strip fenced code blocks if any
   const cleaned = s.trim().replace(/^```(?:json)?/i, "").replace(/```$/, "").trim();
-  try { return JSON.parse(cleaned); } catch {
+  try { return JSON.parse(cleaned) as Record<string, unknown>; } catch {
     const m = cleaned.match(/\{[\s\S]*\}/);
-    if (m) try { return JSON.parse(m[0]); } catch { /* noop */ }
+    if (m) try { return JSON.parse(m[0]) as Record<string, unknown>; } catch { /* noop */ }
     return { raw: s };
   }
 }
