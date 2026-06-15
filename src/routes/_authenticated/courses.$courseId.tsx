@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { ChevronDown, Plus, MoreHorizontal, ArrowLeft, BookOpen, Layers, Sparkles } from "lucide-react";
+import { ChevronDown, Plus, MoreHorizontal, ArrowLeft, BookOpen, Layers, Sparkles, Network } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -56,6 +56,7 @@ function CoursePage() {
         <h2 className="font-display text-2xl">Módulos</h2>
         <div className="flex gap-2">
           <Link to="/assistant" search={{ courseId }} className="inline-flex items-center gap-1 text-sm text-burgundy hover:underline px-3"><Sparkles className="h-3.5 w-3.5 text-gold" /> Assistente deste curso</Link>
+          <Link to="/concept-map/$courseId" params={{ courseId }} className="inline-flex items-center gap-1 text-sm text-burgundy hover:underline px-3"><Network className="h-3.5 w-3.5 text-gold" /> Mapa de Conceitos</Link>
           <NewModuleForm courseId={courseId} />
         </div>
       </div>
