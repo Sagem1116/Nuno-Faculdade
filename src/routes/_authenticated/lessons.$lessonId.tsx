@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, BookOpen, NotebookPen, MessageSquareQuote, Plus, X, StickyNote, Highlighter, FolderOpen, Sparkles, ClipboardCheck, Scale, PenLine } from "lucide-react";
+import { ArrowLeft, BookOpen, NotebookPen, MessageSquareQuote, Plus, X, StickyNote, Highlighter, FolderOpen, Sparkles, ClipboardCheck, Scale, PenLine, FileText } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -85,6 +85,7 @@ function LessonPage() {
           <TabsTrigger value="test"><ClipboardCheck className="h-4 w-4 mr-2" /> Teste</TabsTrigger>
           <TabsTrigger value="case"><Scale className="h-4 w-4 mr-2" /> Estudo de Caso</TabsTrigger>
           <TabsTrigger value="essay"><PenLine className="h-4 w-4 mr-2" /> Mini-Ensaio</TabsTrigger>
+          <TabsTrigger value="apontamentos"><FileText className="h-4 w-4 mr-2" /> Apontamentos</TabsTrigger>
           <TabsTrigger value="documents"><FolderOpen className="h-4 w-4 mr-2" /> Documentos</TabsTrigger>
           <TabsTrigger value="summary"><Sparkles className="h-4 w-4 mr-2" /> Resumo IA</TabsTrigger>
         </TabsList>
@@ -130,6 +131,14 @@ function LessonPage() {
             storageKey={`lesson:${lesson.id}:essay`}
             placeholder="Escreve um mini-ensaio sobre o tema desta aula…"
             onChange={(essay) => update.mutate({ essay: essay as unknown } as Partial<Lesson>)}
+          />
+        </TabsContent>
+        <TabsContent value="apontamentos">
+          <TopicsEditor
+            value={lesson.apontamentos}
+            storageKey={`lesson:${lesson.id}:apontamentos`}
+            placeholder="Escreve aqui os teus apontamentos…"
+            onChange={(apontamentos) => update.mutate({ apontamentos: apontamentos as unknown } as Partial<Lesson>)}
           />
         </TabsContent>
         <TabsContent value="documents">

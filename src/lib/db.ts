@@ -41,6 +41,7 @@ export type Lesson = {
   test?: unknown;
   case_study?: unknown;
   essay?: unknown;
+  apontamentos?: unknown;
 };
 
 export type NoteItem = {
@@ -292,6 +293,7 @@ export async function importAll(payload: { courses?: unknown[]; modules?: unknow
       test: (l.test ?? null) as never,
       case_study: (l.case_study ?? null) as never,
       essay: (l.essay ?? null) as never,
+      apontamentos: (l.apontamentos ?? null) as never,
       summary: (l.summary ?? null) as never,
       study_minutes: l.study_minutes ?? 0,
       module_id: newModuleId, course_id: newCourseId, user_id: user.id,
