@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { getLesson, getCourse, listModules, updateLesson, type Lesson, type LessonStatus, type NoteItem } from "@/lib/db";
 import { summarizeLessonFn } from "@/lib/ai.functions";
-import { TiptapEditor } from "@/components/tiptap-editor";
+import { TopicsEditor, type Topic } from "@/components/topics-editor";
 import { DocumentsTab } from "@/components/documents-tab";
 import { SummaryCard } from "@/components/summary-card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -90,33 +90,41 @@ function LessonPage() {
         </TabsList>
 
         <TabsContent value="content">
-          <ContentTab lesson={lesson} onChange={(content) => update.mutate({ content })} />
+          <TopicsEditor
+            value={lesson.content}
+            onChange={(content) => update.mutate({ content: content as unknown })}
+            placeholder="Começa a escrever a matéria deste tópico…"
+          />
         </TabsContent>
         <TabsContent value="notes">
           <NotesTab lesson={lesson} onChange={(notes) => update.mutate({ notes })} />
         </TabsContent>
         <TabsContent value="reflection">
-          <ReflectionTab lesson={lesson} onChange={(reflection) => update.mutate({ reflection })} />
+          <TopicsEditor
+            value={lesson.reflection}
+            onChange={(topics) => update.mutate({ reflection: topics as unknown as import("@/lib/db").ReflectionData })}
+            placeholder="Escreve a tua reflexão livremente…"
+          />
         </TabsContent>
         <TabsContent value="test">
-          <RichTextTab
+          <TopicsEditor
             value={lesson.test}
             placeholder="Escreve o teu teste de estudo para esta aula… (perguntas, exercícios, autoavaliação)"
-            onChange={(test) => update.mutate({ test } as Partial<Lesson>)}
+            onChange={(test) => update.mutate({ test: test as unknown } as Partial<Lesson>)}
           />
         </TabsContent>
         <TabsContent value="case">
-          <RichTextTab
+          <TopicsEditor
             value={lesson.case_study}
             placeholder="Descreve um estudo de caso real onde aplicas os conceitos desta aula…"
-            onChange={(case_study) => update.mutate({ case_study } as Partial<Lesson>)}
+            onChange={(case_study) => update.mutate({ case_study: case_study as unknown } as Partial<Lesson>)}
           />
         </TabsContent>
         <TabsContent value="essay">
-          <RichTextTab
+          <TopicsEditor
             value={lesson.essay}
             placeholder="Escreve um mini-ensaio sobre o tema desta aula…"
-            onChange={(essay) => update.mutate({ essay } as Partial<Lesson>)}
+            onChange={(essay) => update.mutate({ essay: essay as unknown } as Partial<Lesson>)}
           />
         </TabsContent>
         <TabsContent value="documents">
