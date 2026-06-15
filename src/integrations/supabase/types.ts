@@ -14,6 +14,41 @@ export type Database = {
   }
   public: {
     Tables: {
+      concept_maps: {
+        Row: {
+          course_id: string
+          created_at: string
+          data: Json
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          course_id: string
+          created_at?: string
+          data?: Json
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          course_id?: string
+          created_at?: string
+          data?: Json
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "concept_maps_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: true
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       courses: {
         Row: {
           color: string | null
@@ -114,10 +149,12 @@ export type Database = {
       }
       lessons: {
         Row: {
+          case_study: Json | null
           completed_at: string | null
           content: Json | null
           course_id: string
           created_at: string
+          essay: Json | null
           id: string
           module_id: string
           notes: Json | null
@@ -126,15 +163,18 @@ export type Database = {
           status: string
           study_minutes: number
           summary: Json | null
+          test: Json | null
           title: string
           updated_at: string
           user_id: string
         }
         Insert: {
+          case_study?: Json | null
           completed_at?: string | null
           content?: Json | null
           course_id: string
           created_at?: string
+          essay?: Json | null
           id?: string
           module_id: string
           notes?: Json | null
@@ -143,15 +183,18 @@ export type Database = {
           status?: string
           study_minutes?: number
           summary?: Json | null
+          test?: Json | null
           title: string
           updated_at?: string
           user_id: string
         }
         Update: {
+          case_study?: Json | null
           completed_at?: string | null
           content?: Json | null
           course_id?: string
           created_at?: string
+          essay?: Json | null
           id?: string
           module_id?: string
           notes?: Json | null
@@ -160,6 +203,7 @@ export type Database = {
           status?: string
           study_minutes?: number
           summary?: Json | null
+          test?: Json | null
           title?: string
           updated_at?: string
           user_id?: string
