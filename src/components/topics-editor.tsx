@@ -3,6 +3,8 @@ import { TiptapEditor } from "./tiptap-editor";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus, Trash2, ChevronUp, ChevronDown } from "lucide-react";
+import { SortableList } from "@/components/sortable";
+import { toast } from "sonner";
 
 export type Topic = { id: string; title: string; content: unknown };
 
@@ -12,6 +14,8 @@ type Props = {
   placeholder?: string;
   /** Used to label the first auto-migrated topic from legacy data. */
   legacyTitle?: string;
+  /** Stable key used for localStorage autosave & recovery. */
+  storageKey?: string;
 };
 
 const REFLECTION_KEYS: Record<string, string> = {
@@ -55,24 +59,47 @@ function normalize(value: unknown, legacyTitle = ""): Topic[] {
   return [{ id: crypto.randomUUID(), title: "", content: null }];
 }
 
-export function TopicsEditor({ value, onChange, placeholder, legacyTitle }: Props) {
+export function TopicsEditor({ value, onChange, placeholder, legacyTitle, storageKey }: Props) {
   const [topics, setTopics] = useState<Topic[]>(() => normalize(value, legacyTitle));
-  const initialized = useRef(true);
+  const [recoverable, setRecoverable] = useState<{ topics: Topic[]; savedAt: number } | null>(null);
+  const [savedAt, setSavedAt] = useState<number | null>(null);
+  const draftKey = storageKey ? `topics-draft:${storageKey}` : null;
 
-  // If parent value changes externally (and isn't our own array), reseed.
+  // Detect recoverable draft on mount (only if newer than committed value).
   useEffect(() => {
-    if (!Array.isArray(value)) {
-      const next = normalize(value, legacyTitle);
-      setTopics(next);
-    }
+    if (!draftKey || typeof window === "undefined") return;
+    try {
+      const raw = localStorage.getItem(draftKey);
+      if (!raw) return;
+      const parsed = JSON.parse(raw) as { topics: Topic[]; savedAt: number };
+      const committed = JSON.stringify(normalize(value, legacyTitle));
+      if (JSON.stringify(parsed.topics) !== committed) {
+        setRecoverable(parsed);
+      } else {
+        localStorage.removeItem(draftKey);
+      }
+    } catch { /* ignore */ }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [draftKey]);
 
   const commitTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const commit = (next: Topic[]) => {
     setTopics(next);
+    // Immediate local draft (recovery) write
+    if (draftKey && typeof window !== "undefined") {
+      try {
+        const payload = { topics: next, savedAt: Date.now() };
+        localStorage.setItem(draftKey, JSON.stringify(payload));
+        setSavedAt(payload.savedAt);
+      } catch { /* quota / private mode */ }
+    }
     if (commitTimer.current) clearTimeout(commitTimer.current);
-    commitTimer.current = setTimeout(() => onChange(next), 400);
+    commitTimer.current = setTimeout(() => {
+      onChange(next);
+      if (draftKey && typeof window !== "undefined") {
+        try { localStorage.removeItem(draftKey); } catch { /* ignore */ }
+      }
+    }, 600);
   };
 
   const update = (id: string, patch: Partial<Topic>) =>
@@ -102,42 +129,76 @@ export function TopicsEditor({ value, onChange, placeholder, legacyTitle }: Prop
 
   return (
     <div className="space-y-6">
-      {memoTopics.map((t, idx) => (
-        <div key={t.id} className="gold-frame rounded-md bg-card overflow-hidden">
-          <div className="flex items-center gap-2 border-b bg-card/60 px-3 py-2">
-            <span className="font-display text-xs uppercase tracking-[0.18em] text-gold px-1">
-              §{idx + 1}
-            </span>
-            <Input
-              value={t.title}
-              onChange={(e) => update(t.id, { title: e.target.value })}
-              placeholder="Título do tópico (opcional)"
-              className="border-0 bg-transparent font-display text-lg shadow-none focus-visible:ring-0 px-1"
-            />
-            <div className="ml-auto flex items-center gap-1">
-              <Button size="icon" variant="ghost" onClick={() => move(t.id, -1)} disabled={idx === 0} title="Subir">
-                <ChevronUp className="h-4 w-4" />
-              </Button>
-              <Button size="icon" variant="ghost" onClick={() => move(t.id, 1)} disabled={idx === topics.length - 1} title="Descer">
-                <ChevronDown className="h-4 w-4" />
-              </Button>
-              <Button size="icon" variant="ghost" onClick={() => remove(t.id)} className="text-muted-foreground hover:text-destructive" title="Remover">
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            </div>
+      {recoverable && (
+        <div className="gold-frame rounded-md bg-accent/20 border border-gold/40 px-4 py-3 flex flex-wrap items-center gap-3 text-sm">
+          <span>
+            Há uma versão guardada localmente de{" "}
+            <strong>{new Date(recoverable.savedAt).toLocaleString("pt-PT")}</strong> por gravar.
+          </span>
+          <div className="ml-auto flex gap-2">
+            <Button size="sm" variant="outline" onClick={() => {
+              commit(recoverable.topics);
+              setRecoverable(null);
+              toast.success("Rascunho restaurado.");
+            }}>Recuperar</Button>
+            <Button size="sm" variant="ghost" onClick={() => {
+              if (draftKey) try { localStorage.removeItem(draftKey); } catch { /* ignore */ }
+              setRecoverable(null);
+            }}>Descartar</Button>
           </div>
-          <TopicEditor
-            value={t.content}
-            placeholder={placeholder}
-            onChange={(c) => update(t.id, { content: c })}
-          />
         </div>
-      ))}
+      )}
+
+      <SortableList
+        items={memoTopics}
+        onReorder={(next) => commit(next)}
+        renderItem={(t, dragHandle) => {
+          const idx = memoTopics.findIndex((x) => x.id === t.id);
+          return (
+            <div className="gold-frame rounded-md bg-card overflow-hidden">
+              <div className="flex items-center gap-2 border-b bg-card/60 px-3 py-2">
+                {dragHandle}
+                <span className="font-display text-xs uppercase tracking-[0.18em] text-gold px-1">
+                  §{idx + 1}
+                </span>
+                <Input
+                  value={t.title}
+                  onChange={(e) => update(t.id, { title: e.target.value })}
+                  placeholder="Título do tópico (opcional)"
+                  className="border-0 bg-transparent font-display text-lg shadow-none focus-visible:ring-0 px-1"
+                />
+                <div className="ml-auto flex items-center gap-1">
+                  <Button size="icon" variant="ghost" onClick={() => move(t.id, -1)} disabled={idx === 0} title="Subir prioridade">
+                    <ChevronUp className="h-4 w-4" />
+                  </Button>
+                  <Button size="icon" variant="ghost" onClick={() => move(t.id, 1)} disabled={idx === memoTopics.length - 1} title="Descer prioridade">
+                    <ChevronDown className="h-4 w-4" />
+                  </Button>
+                  <Button size="icon" variant="ghost" onClick={() => remove(t.id)} className="text-muted-foreground hover:text-destructive" title="Remover">
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+              <TopicEditor
+                value={t.content}
+                placeholder={placeholder}
+                onChange={(c) => update(t.id, { content: c })}
+              />
+            </div>
+          );
+        }}
+      />
+
       <div className="flex justify-center">
         <Button onClick={add} variant="outline" className="gold-frame">
           <Plus className="h-4 w-4 mr-2" /> Adicionar tópico
         </Button>
       </div>
+      {savedAt && (
+        <p className="text-center text-xs text-muted-foreground">
+          Rascunho local guardado às {new Date(savedAt).toLocaleTimeString("pt-PT")}
+        </p>
+      )}
     </div>
   );
 }

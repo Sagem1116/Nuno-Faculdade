@@ -92,6 +92,7 @@ function LessonPage() {
         <TabsContent value="content">
           <TopicsEditor
             value={lesson.content}
+            storageKey={`lesson:${lesson.id}:content`}
             onChange={(content) => update.mutate({ content: content as unknown })}
             placeholder="Começa a escrever a matéria deste tópico…"
           />
@@ -102,6 +103,7 @@ function LessonPage() {
         <TabsContent value="reflection">
           <TopicsEditor
             value={lesson.reflection}
+            storageKey={`lesson:${lesson.id}:reflection`}
             onChange={(topics) => update.mutate({ reflection: topics as unknown as import("@/lib/db").ReflectionData })}
             placeholder="Escreve a tua reflexão livremente…"
           />
@@ -109,6 +111,7 @@ function LessonPage() {
         <TabsContent value="test">
           <TopicsEditor
             value={lesson.test}
+            storageKey={`lesson:${lesson.id}:test`}
             placeholder="Escreve o teu teste de estudo para esta aula… (perguntas, exercícios, autoavaliação)"
             onChange={(test) => update.mutate({ test: test as unknown } as Partial<Lesson>)}
           />
@@ -116,6 +119,7 @@ function LessonPage() {
         <TabsContent value="case">
           <TopicsEditor
             value={lesson.case_study}
+            storageKey={`lesson:${lesson.id}:case_study`}
             placeholder="Descreve um estudo de caso real onde aplicas os conceitos desta aula…"
             onChange={(case_study) => update.mutate({ case_study: case_study as unknown } as Partial<Lesson>)}
           />
@@ -123,6 +127,7 @@ function LessonPage() {
         <TabsContent value="essay">
           <TopicsEditor
             value={lesson.essay}
+            storageKey={`lesson:${lesson.id}:essay`}
             placeholder="Escreve um mini-ensaio sobre o tema desta aula…"
             onChange={(essay) => update.mutate({ essay: essay as unknown } as Partial<Lesson>)}
           />
