@@ -289,6 +289,10 @@ export async function importAll(payload: { courses?: unknown[]; modules?: unknow
     await supabase.from("lessons").insert({
       title: l.title, status: l.status, position: l.position,
       content: l.content as never, notes: l.notes as never, reflection: l.reflection as never,
+      test: (l.test ?? null) as never,
+      case_study: (l.case_study ?? null) as never,
+      essay: (l.essay ?? null) as never,
+      summary: (l.summary ?? null) as never,
       study_minutes: l.study_minutes ?? 0,
       module_id: newModuleId, course_id: newCourseId, user_id: user.id,
     });
