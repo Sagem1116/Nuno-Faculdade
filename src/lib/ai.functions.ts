@@ -5,6 +5,9 @@ import { z } from "zod";
 import { createGateway, DEFAULT_MODEL } from "./ai-gateway.server";
 import { tiptapText, truncate } from "./knowledge";
 
+type JsonValue = string | number | boolean | null | JsonValue[] | { [k: string]: JsonValue };
+type JsonObject = { [k: string]: JsonValue };
+
 type Ctx = { supabase: import("@supabase/supabase-js").SupabaseClient };
 
 function key() {
@@ -259,12 +262,12 @@ ${truncate(kb, 22000)}`;
     return { answer: text };
   });
 
-function safeJson(s: string): Record<string, unknown> {
+function safeJson(s: string): JsonObject {
   // Strip fenced code blocks if any
   const cleaned = s.trim().replace(/^```(?:json)?/i, "").replace(/```$/, "").trim();
-  try { return JSON.parse(cleaned) as Record<string, unknown>; } catch {
+  try { return JSON.parse(cleaned) as JsonObject; } catch {
     const m = cleaned.match(/\{[\s\S]*\}/);
-    if (m) try { return JSON.parse(m[0]) as Record<string, unknown>; } catch { /* noop */ }
+    if (m) try { return JSON.parse(m[0]) as JsonObject; } catch { /* noop */ }
     return { raw: s };
   }
 }
