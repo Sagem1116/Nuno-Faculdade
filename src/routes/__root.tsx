@@ -84,6 +84,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:title", content: "Universidade Digital" },
+      { name: "twitter:description", content: "A tua universidade pessoal — cursos, módulos, aulas, notas e progresso académico num só lugar." },
+      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/11abe2b3-2199-4ed8-8a34-970b4fc24676" },
+      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/11abe2b3-2199-4ed8-8a34-970b4fc24676" },
     ],
     links: [
       {
