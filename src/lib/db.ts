@@ -9,6 +9,7 @@ export type Course = {
   color: string | null;
   position: number;
   created_at: string;
+  summary?: unknown;
 };
 
 export type Module = {
@@ -17,6 +18,7 @@ export type Module = {
   user_id: string;
   title: string;
   position: number;
+  summary?: unknown;
 };
 
 export type LessonStatus = "not_started" | "in_progress" | "completed" | "mastered";
@@ -35,6 +37,7 @@ export type Lesson = {
   study_minutes: number;
   completed_at: string | null;
   updated_at: string;
+  summary?: unknown;
 };
 
 export type NoteItem = {
@@ -97,7 +100,7 @@ export async function createCourse(input: { name: string; description?: string; 
 }
 
 export async function updateCourse(id: string, patch: Partial<Course>) {
-  const { error } = await supabase.from("courses").update(patch).eq("id", id);
+  const { error } = await supabase.from("courses").update(patch as never).eq("id", id);
   if (error) throw error;
 }
 
@@ -169,7 +172,7 @@ export async function createModule(courseId: string, title: string) {
 }
 
 export async function updateModule(id: string, patch: Partial<Module>) {
-  const { error } = await supabase.from("modules").update(patch).eq("id", id);
+  const { error } = await supabase.from("modules").update(patch as never).eq("id", id);
   if (error) throw error;
 }
 

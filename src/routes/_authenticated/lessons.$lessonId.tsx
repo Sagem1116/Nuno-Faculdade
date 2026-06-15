@@ -1,7 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { getLesson, getCourse, listModules, updateLesson, type Lesson, type LessonStatus, type NoteItem } from "@/lib/db";
+import { summarizeLessonFn } from "@/lib/ai.functions";
 import { TiptapEditor } from "@/components/tiptap-editor";
+import { DocumentsTab } from "@/components/documents-tab";
+import { SummaryCard } from "@/components/summary-card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,9 +13,10 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, BookOpen, NotebookPen, MessageSquareQuote, Plus, X, StickyNote, Highlighter } from "lucide-react";
+import { ArrowLeft, BookOpen, NotebookPen, MessageSquareQuote, Plus, X, StickyNote, Highlighter, FolderOpen, Sparkles } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/lessons/$lessonId")({
   component: LessonPage,
@@ -77,6 +82,8 @@ function LessonPage() {
           <TabsTrigger value="content"><BookOpen className="h-4 w-4 mr-2" /> Matéria</TabsTrigger>
           <TabsTrigger value="notes"><NotebookPen className="h-4 w-4 mr-2" /> Notas</TabsTrigger>
           <TabsTrigger value="reflection"><MessageSquareQuote className="h-4 w-4 mr-2" /> Reflexão Final</TabsTrigger>
+          <TabsTrigger value="documents"><FolderOpen className="h-4 w-4 mr-2" /> Documentos</TabsTrigger>
+          <TabsTrigger value="summary"><Sparkles className="h-4 w-4 mr-2" /> Resumo IA</TabsTrigger>
         </TabsList>
 
         <TabsContent value="content">
@@ -88,9 +95,26 @@ function LessonPage() {
         <TabsContent value="reflection">
           <ReflectionTab lesson={lesson} onChange={(reflection) => update.mutate({ reflection })} />
         </TabsContent>
+        <TabsContent value="documents">
+          <DocumentsTab lessonId={lesson.id} courseId={lesson.course_id} />
+        </TabsContent>
+        <TabsContent value="summary">
+          <LessonSummaryTab lessonId={lesson.id} summary={lesson.summary as Record<string, unknown> | null} />
+        </TabsContent>
       </Tabs>
     </div>
   );
+}
+
+function LessonSummaryTab({ lessonId, summary }: { lessonId: string; summary: Record<string, unknown> | null }) {
+  const qc = useQueryClient();
+  const fn = useServerFn(summarizeLessonFn);
+  const m = useMutation({
+    mutationFn: () => fn({ data: { lessonId } }),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["lesson", lessonId] }); toast.success("Resumo gerado."); },
+    onError: (e: Error) => toast.error(e.message),
+  });
+  return <SummaryCard title="Gerar Resumo da Aula" summary={summary} onGenerate={() => m.mutate()} loading={m.isPending} />;
 }
 
 function InlineEditableTitle({ value, onSave }: { value: string; onSave: (v: string) => void }) {

@@ -1,13 +1,16 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { LogOut, GraduationCap } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { LogOut, GraduationCap, Sparkles, Search } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { getProfile } from "@/lib/db";
+import { useState } from "react";
 
 export function SiteHeader() {
   const navigate = useNavigate();
   const { data: profile } = useQuery({ queryKey: ["profile"], queryFn: getProfile });
+  const [q, setQ] = useState("");
 
   const onSignOut = async () => {
     await supabase.auth.signOut();
@@ -32,9 +35,19 @@ export function SiteHeader() {
             </div>
           </div>
         </Link>
-        <nav className="ml-auto hidden md:flex items-center gap-1 font-display text-sm">
+        <form
+          onSubmit={(e) => { e.preventDefault(); if (q.trim()) navigate({ to: "/assistant", search: { q: q.trim() } }); }}
+          className="ml-auto hidden md:flex items-center gap-1"
+        >
+          <div className="relative">
+            <Search className="absolute left-2 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
+            <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Pesquisar conceito…" className="h-9 pl-7 w-56" />
+          </div>
+        </form>
+        <nav className="hidden md:flex items-center gap-1 font-display text-sm ml-2">
           {[
             { to: "/campus", label: "Campus" },
+            { to: "/assistant", label: "Assistente" },
             { to: "/dashboard", label: "Dashboard" },
             { to: "/settings", label: "Reitoria" },
           ].map((item) => (
@@ -44,7 +57,7 @@ export function SiteHeader() {
               className="px-3 py-2 rounded text-foreground/80 hover:text-foreground hover:bg-secondary transition-colors"
               activeProps={{ className: "text-burgundy underline decoration-gold underline-offset-8 decoration-2" }}
             >
-              {item.label}
+              {item.label === "Assistente" ? <span className="inline-flex items-center gap-1"><Sparkles className="h-3.5 w-3.5 text-gold" />{item.label}</span> : item.label}
             </Link>
           ))}
         </nav>

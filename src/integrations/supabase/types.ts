@@ -23,6 +23,7 @@ export type Database = {
           id: string
           name: string
           position: number
+          summary: Json | null
           updated_at: string
           user_id: string
         }
@@ -34,6 +35,7 @@ export type Database = {
           id?: string
           name: string
           position?: number
+          summary?: Json | null
           updated_at?: string
           user_id: string
         }
@@ -45,10 +47,70 @@ export type Database = {
           id?: string
           name?: string
           position?: number
+          summary?: Json | null
           updated_at?: string
           user_id?: string
         }
         Relationships: []
+      }
+      lesson_documents: {
+        Row: {
+          course_id: string
+          created_at: string
+          external_url: string | null
+          id: string
+          kind: string
+          lesson_id: string
+          mime_type: string | null
+          name: string
+          size_bytes: number | null
+          storage_path: string | null
+          summary: Json | null
+          text_content: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          course_id: string
+          created_at?: string
+          external_url?: string | null
+          id?: string
+          kind?: string
+          lesson_id: string
+          mime_type?: string | null
+          name: string
+          size_bytes?: number | null
+          storage_path?: string | null
+          summary?: Json | null
+          text_content?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          course_id?: string
+          created_at?: string
+          external_url?: string | null
+          id?: string
+          kind?: string
+          lesson_id?: string
+          mime_type?: string | null
+          name?: string
+          size_bytes?: number | null
+          storage_path?: string | null
+          summary?: Json | null
+          text_content?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lesson_documents_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "lessons"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       lessons: {
         Row: {
@@ -63,6 +125,7 @@ export type Database = {
           reflection: Json | null
           status: string
           study_minutes: number
+          summary: Json | null
           title: string
           updated_at: string
           user_id: string
@@ -79,6 +142,7 @@ export type Database = {
           reflection?: Json | null
           status?: string
           study_minutes?: number
+          summary?: Json | null
           title: string
           updated_at?: string
           user_id: string
@@ -95,6 +159,7 @@ export type Database = {
           reflection?: Json | null
           status?: string
           study_minutes?: number
+          summary?: Json | null
           title?: string
           updated_at?: string
           user_id?: string
@@ -122,6 +187,7 @@ export type Database = {
           created_at: string
           id: string
           position: number
+          summary: Json | null
           title: string
           updated_at: string
           user_id: string
@@ -131,6 +197,7 @@ export type Database = {
           created_at?: string
           id?: string
           position?: number
+          summary?: Json | null
           title: string
           updated_at?: string
           user_id: string
@@ -140,6 +207,7 @@ export type Database = {
           created_at?: string
           id?: string
           position?: number
+          summary?: Json | null
           title?: string
           updated_at?: string
           user_id?: string
