@@ -3,11 +3,13 @@
 export function tiptapText(node: unknown): string {
   if (!node) return "";
   if (typeof node === "string") return node;
+  if (Array.isArray(node)) return node.map(tiptapText).join("\n");
   if (typeof node !== "object") return "";
-  const n = node as { text?: string; content?: unknown[] };
+  const n = node as { text?: string; title?: string; content?: unknown };
   let out = "";
+  if (typeof n.title === "string" && n.title.trim()) out += "\n# " + n.title + "\n";
   if (typeof n.text === "string") out += n.text + " ";
-  if (Array.isArray(n.content)) out += n.content.map(tiptapText).join(" ");
+  if (n.content) out += tiptapText(n.content);
   return out;
 }
 

@@ -28,9 +28,10 @@ type Props = {
   value: unknown;
   onChange: (json: unknown) => void;
   placeholder?: string;
+  minHeight?: string;
 };
 
-export function TiptapEditor({ value, onChange, placeholder }: Props) {
+export function TiptapEditor({ value, onChange, placeholder, minHeight = "60vh" }: Props) {
   const editor = useEditor({
     extensions: [
       StarterKit.configure({ heading: { levels: [1, 2, 3, 4, 5, 6] } }),
@@ -62,7 +63,7 @@ export function TiptapEditor({ value, onChange, placeholder }: Props) {
   return (
     <div className="gold-frame rounded-md bg-card">
       <Toolbar editor={editor} />
-      <div className="p-6 sm:p-10 min-h-[60vh]">
+      <div className="p-6 sm:p-10" style={{ minHeight }}>
         <EditorContent editor={editor} className="prose-academic max-w-none" />
       </div>
     </div>
