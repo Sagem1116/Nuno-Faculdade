@@ -189,7 +189,7 @@ export async function listLessons(moduleId: string): Promise<Lesson[]> {
     .from("lessons").select("*").eq("module_id", moduleId)
     .order("position", { ascending: true });
   if (error) throw error;
-  return (data ?? []) as Lesson[];
+  return (data ?? []) as unknown as Lesson[];
 }
 
 export async function listLessonsByCourse(courseId: string): Promise<Lesson[]> {
@@ -197,13 +197,13 @@ export async function listLessonsByCourse(courseId: string): Promise<Lesson[]> {
     .from("lessons").select("*").eq("course_id", courseId)
     .order("position", { ascending: true });
   if (error) throw error;
-  return (data ?? []) as Lesson[];
+  return (data ?? []) as unknown as Lesson[];
 }
 
 export async function listAllLessons(): Promise<Lesson[]> {
   const { data, error } = await supabase.from("lessons").select("*");
   if (error) throw error;
-  return (data ?? []) as Lesson[];
+  return (data ?? []) as unknown as Lesson[];
 }
 
 export async function createLesson(moduleId: string, courseId: string, title: string) {
@@ -219,16 +219,16 @@ export async function createLesson(moduleId: string, courseId: string, title: st
     })
     .select("*").single();
   if (error) throw error;
-  return data as Lesson;
+  return data as unknown as Lesson;
 }
 
 export async function getLesson(id: string): Promise<Lesson | null> {
   const { data } = await supabase.from("lessons").select("*").eq("id", id).maybeSingle();
-  return data as Lesson | null;
+  return data as unknown as Lesson | null;
 }
 
 export async function updateLesson(id: string, patch: Partial<Lesson>) {
-  const { error } = await supabase.from("lessons").update(patch).eq("id", id);
+  const { error } = await supabase.from("lessons").update(patch as never).eq("id", id);
   if (error) throw error;
 }
 
@@ -282,7 +282,7 @@ export async function importAll(payload: { courses?: unknown[]; modules?: unknow
     if (!newModuleId || !newCourseId) continue;
     await supabase.from("lessons").insert({
       title: l.title, status: l.status, position: l.position,
-      content: l.content, notes: l.notes, reflection: l.reflection,
+      content: l.content as never, notes: l.notes as never, reflection: l.reflection as never,
       study_minutes: l.study_minutes ?? 0,
       module_id: newModuleId, course_id: newCourseId, user_id: user.id,
     });
