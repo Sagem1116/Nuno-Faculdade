@@ -165,35 +165,6 @@ function InlineEditableTitle({ value, onSave }: { value: string; onSave: (v: str
   );
 }
 
-function ContentTab({ lesson, onChange }: { lesson: Lesson; onChange: (json: unknown) => void }) {
-  // Debounce content saves
-  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  return (
-    <TiptapEditor
-      value={lesson.content}
-      onChange={(json) => {
-        if (timer.current) clearTimeout(timer.current);
-        timer.current = setTimeout(() => onChange(json), 600);
-      }}
-      placeholder="Começa a escrever as tuas notas de aula…"
-    />
-  );
-}
-
-function RichTextTab({ value, placeholder, onChange }: { value: unknown; placeholder: string; onChange: (json: unknown) => void }) {
-  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  return (
-    <TiptapEditor
-      value={value}
-      onChange={(json) => {
-        if (timer.current) clearTimeout(timer.current);
-        timer.current = setTimeout(() => onChange(json), 600);
-      }}
-      placeholder={placeholder}
-    />
-  );
-}
-
 function NotesTab({ lesson, onChange }: { lesson: Lesson; onChange: (notes: NoteItem[]) => void }) {
   const notes = lesson.notes ?? [];
   const [text, setText] = useState("");
@@ -252,39 +223,6 @@ function NotesTab({ lesson, onChange }: { lesson: Lesson; onChange: (notes: Note
           <Button onClick={add} className="w-full" disabled={!text.trim()}><Plus className="h-4 w-4 mr-1" /> Adicionar</Button>
         </div>
       </Card>
-    </div>
-  );
-}
-
-function ReflectionTab({ lesson, onChange }: { lesson: Lesson; onChange: (r: import("@/lib/db").ReflectionData) => void }) {
-  const r = lesson.reflection ?? {};
-  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const set = (patch: Partial<typeof r>) => {
-    const next = { ...r, ...patch };
-    if (timer.current) clearTimeout(timer.current);
-    timer.current = setTimeout(() => onChange(next), 500);
-  };
-  const fields: { key: keyof typeof r; label: string }[] = [
-    { key: "learned", label: "O que aprendi hoje?" },
-    { key: "not_understood", label: "O que ainda não compreendi?" },
-    { key: "to_review", label: "O que devo rever?" },
-    { key: "connections", label: "Como esta aula se relaciona com conteúdos anteriores?" },
-    { key: "ideas", label: "Ideias e pensamentos pessoais" },
-  ];
-  return (
-    <div className="grid md:grid-cols-2 gap-4">
-      {fields.map((f) => (
-        <Card key={String(f.key)} className="p-5">
-          <Label className="font-display text-base">{f.label}</Label>
-          <Textarea
-            rows={5}
-            defaultValue={(r[f.key] as string) ?? ""}
-            onChange={(e) => set({ [f.key]: e.target.value })}
-            className="mt-2 font-serif"
-            placeholder="Escreve a tua reflexão…"
-          />
-        </Card>
-      ))}
     </div>
   );
 }
