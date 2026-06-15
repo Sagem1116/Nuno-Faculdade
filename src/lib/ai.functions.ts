@@ -309,7 +309,7 @@ ${truncate(text, 16000)}`;
     const { text: out } = await generateText({ model: g(DEFAULT_MODEL), prompt });
     const json = safeJson(out);
     await context.supabase.from("concept_maps")
-      .upsert({ user_id: (context as unknown as { userId: string }).userId, course_id: data.courseId, data: json as never }, { onConflict: "course_id" });
+      .upsert({ user_id: context.userId, course_id: data.courseId, data: json as never }, { onConflict: "course_id" });
     return json;
   });
 
