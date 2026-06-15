@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Download, Upload } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
+import { ThemeSwitcher } from "@/components/theme-switcher";
 
 export const Route = createFileRoute("/_authenticated/settings")({
   head: () => ({ meta: [{ title: "Reitoria — Universidade Digital" }] }),
@@ -94,6 +95,12 @@ function Settings() {
           <Button variant="outline" onClick={() => fileRef.current?.click()}><Upload className="h-4 w-4 mr-2" /> Importar JSON</Button>
           <input ref={fileRef} type="file" accept="application/json" onChange={onImport} className="hidden" />
         </div>
+      </Card>
+
+      <Card className="p-6 space-y-4">
+        <h2 className="font-display text-xl">Aparência</h2>
+        <p className="text-sm text-muted-foreground">Escolhe a atmosfera visual da tua universidade.</p>
+        <ThemeSwitcher />
       </Card>
     </div>
   );

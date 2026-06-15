@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { getLesson, getCourse, listModules, updateLesson, type Lesson, type LessonStatus, type NoteItem } from "@/lib/db";
 import { summarizeLessonFn } from "@/lib/ai.functions";
-import { TiptapEditor } from "@/components/tiptap-editor";
+import { TopicsEditor } from "@/components/topics-editor";
 import { DocumentsTab } from "@/components/documents-tab";
 import { SummaryCard } from "@/components/summary-card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -90,33 +90,41 @@ function LessonPage() {
         </TabsList>
 
         <TabsContent value="content">
-          <ContentTab lesson={lesson} onChange={(content) => update.mutate({ content })} />
+          <TopicsEditor
+            value={lesson.content}
+            onChange={(content) => update.mutate({ content: content as unknown })}
+            placeholder="Começa a escrever a matéria deste tópico…"
+          />
         </TabsContent>
         <TabsContent value="notes">
           <NotesTab lesson={lesson} onChange={(notes) => update.mutate({ notes })} />
         </TabsContent>
         <TabsContent value="reflection">
-          <ReflectionTab lesson={lesson} onChange={(reflection) => update.mutate({ reflection })} />
+          <TopicsEditor
+            value={lesson.reflection}
+            onChange={(topics) => update.mutate({ reflection: topics as unknown as import("@/lib/db").ReflectionData })}
+            placeholder="Escreve a tua reflexão livremente…"
+          />
         </TabsContent>
         <TabsContent value="test">
-          <RichTextTab
+          <TopicsEditor
             value={lesson.test}
             placeholder="Escreve o teu teste de estudo para esta aula… (perguntas, exercícios, autoavaliação)"
-            onChange={(test) => update.mutate({ test } as Partial<Lesson>)}
+            onChange={(test) => update.mutate({ test: test as unknown } as Partial<Lesson>)}
           />
         </TabsContent>
         <TabsContent value="case">
-          <RichTextTab
+          <TopicsEditor
             value={lesson.case_study}
             placeholder="Descreve um estudo de caso real onde aplicas os conceitos desta aula…"
-            onChange={(case_study) => update.mutate({ case_study } as Partial<Lesson>)}
+            onChange={(case_study) => update.mutate({ case_study: case_study as unknown } as Partial<Lesson>)}
           />
         </TabsContent>
         <TabsContent value="essay">
-          <RichTextTab
+          <TopicsEditor
             value={lesson.essay}
             placeholder="Escreve um mini-ensaio sobre o tema desta aula…"
-            onChange={(essay) => update.mutate({ essay } as Partial<Lesson>)}
+            onChange={(essay) => update.mutate({ essay: essay as unknown } as Partial<Lesson>)}
           />
         </TabsContent>
         <TabsContent value="documents">
@@ -154,35 +162,6 @@ function InlineEditableTitle({ value, onSave }: { value: string; onSave: (v: str
   }
   return (
     <h1 className="font-display text-3xl cursor-text hover:text-burgundy" onClick={() => setEditing(true)}>{value}</h1>
-  );
-}
-
-function ContentTab({ lesson, onChange }: { lesson: Lesson; onChange: (json: unknown) => void }) {
-  // Debounce content saves
-  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  return (
-    <TiptapEditor
-      value={lesson.content}
-      onChange={(json) => {
-        if (timer.current) clearTimeout(timer.current);
-        timer.current = setTimeout(() => onChange(json), 600);
-      }}
-      placeholder="Começa a escrever as tuas notas de aula…"
-    />
-  );
-}
-
-function RichTextTab({ value, placeholder, onChange }: { value: unknown; placeholder: string; onChange: (json: unknown) => void }) {
-  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  return (
-    <TiptapEditor
-      value={value}
-      onChange={(json) => {
-        if (timer.current) clearTimeout(timer.current);
-        timer.current = setTimeout(() => onChange(json), 600);
-      }}
-      placeholder={placeholder}
-    />
   );
 }
 
@@ -244,39 +223,6 @@ function NotesTab({ lesson, onChange }: { lesson: Lesson; onChange: (notes: Note
           <Button onClick={add} className="w-full" disabled={!text.trim()}><Plus className="h-4 w-4 mr-1" /> Adicionar</Button>
         </div>
       </Card>
-    </div>
-  );
-}
-
-function ReflectionTab({ lesson, onChange }: { lesson: Lesson; onChange: (r: import("@/lib/db").ReflectionData) => void }) {
-  const r = lesson.reflection ?? {};
-  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const set = (patch: Partial<typeof r>) => {
-    const next = { ...r, ...patch };
-    if (timer.current) clearTimeout(timer.current);
-    timer.current = setTimeout(() => onChange(next), 500);
-  };
-  const fields: { key: keyof typeof r; label: string }[] = [
-    { key: "learned", label: "O que aprendi hoje?" },
-    { key: "not_understood", label: "O que ainda não compreendi?" },
-    { key: "to_review", label: "O que devo rever?" },
-    { key: "connections", label: "Como esta aula se relaciona com conteúdos anteriores?" },
-    { key: "ideas", label: "Ideias e pensamentos pessoais" },
-  ];
-  return (
-    <div className="grid md:grid-cols-2 gap-4">
-      {fields.map((f) => (
-        <Card key={String(f.key)} className="p-5">
-          <Label className="font-display text-base">{f.label}</Label>
-          <Textarea
-            rows={5}
-            defaultValue={(r[f.key] as string) ?? ""}
-            onChange={(e) => set({ [f.key]: e.target.value })}
-            className="mt-2 font-serif"
-            placeholder="Escreve a tua reflexão…"
-          />
-        </Card>
-      ))}
     </div>
   );
 }

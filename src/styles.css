@@ -138,6 +138,63 @@
   --sidebar-ring: oklch(0.55 0.08 60);
 }
 
+/* Midnight — deep navy with luxurious gold */
+.theme-midnight {
+  --parchment: oklch(0.22 0.06 260);
+  --ink: oklch(0.93 0.04 90);
+  --gold: oklch(0.82 0.14 86);
+  --burgundy: oklch(0.78 0.13 60);
+  --background: oklch(0.16 0.07 265);
+  --foreground: oklch(0.93 0.05 88);
+  --card: oklch(0.21 0.07 263);
+  --card-foreground: oklch(0.93 0.05 88);
+  --popover: oklch(0.21 0.07 263);
+  --popover-foreground: oklch(0.93 0.05 88);
+  --primary: oklch(0.82 0.14 86);
+  --primary-foreground: oklch(0.18 0.07 265);
+  --secondary: oklch(0.26 0.07 262);
+  --secondary-foreground: oklch(0.93 0.05 88);
+  --muted: oklch(0.24 0.07 263);
+  --muted-foreground: oklch(0.78 0.06 88);
+  --accent: oklch(0.82 0.14 86);
+  --accent-foreground: oklch(0.18 0.07 265);
+  --destructive: oklch(0.6 0.18 28);
+  --destructive-foreground: oklch(0.96 0.02 80);
+  --border: oklch(0.36 0.08 262);
+  --input: oklch(0.3 0.07 262);
+  --ring: oklch(0.82 0.14 86);
+  --chart-1: oklch(0.82 0.14 86);
+  --chart-2: oklch(0.7 0.14 60);
+  --chart-3: oklch(0.6 0.16 30);
+  --chart-4: oklch(0.65 0.1 200);
+  --chart-5: oklch(0.65 0.12 140);
+  --sidebar: oklch(0.18 0.07 265);
+  --sidebar-foreground: oklch(0.92 0.05 88);
+  --sidebar-primary: oklch(0.82 0.14 86);
+  --sidebar-primary-foreground: oklch(0.18 0.07 265);
+  --sidebar-accent: oklch(0.24 0.07 263);
+  --sidebar-accent-foreground: oklch(0.92 0.05 88);
+  --sidebar-border: oklch(0.34 0.08 262);
+  --sidebar-ring: oklch(0.82 0.14 86);
+}
+
+.theme-midnight body {
+  background-image:
+    radial-gradient(at 0% 0%, color-mix(in oklab, var(--color-gold) 10%, transparent), transparent 55%),
+    radial-gradient(at 100% 100%, color-mix(in oklab, var(--color-gold) 6%, transparent), transparent 55%);
+}
+
+.theme-midnight h1,
+.theme-midnight h2,
+.theme-midnight h3,
+.theme-midnight h4,
+.theme-midnight h5,
+.theme-midnight h6,
+.theme-midnight .font-display {
+  color: var(--color-gold);
+  text-shadow: 0 1px 0 color-mix(in oklab, var(--color-gold) 25%, transparent);
+}
+
 @layer base {
   * {
     border-color: var(--color-border);
