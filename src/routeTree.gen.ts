@@ -18,6 +18,7 @@ import { Route as AuthenticatedCampusRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedAssistantRouteImport } from './routes/_authenticated/assistant'
 import { Route as AuthenticatedLessonsLessonIdRouteImport } from './routes/_authenticated/lessons.$lessonId'
 import { Route as AuthenticatedCoursesCourseIdRouteImport } from './routes/_authenticated/courses.$courseId'
+import { Route as AuthenticatedConceptMapCourseIdRouteImport } from './routes/_authenticated/concept-map.$courseId'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -65,6 +66,12 @@ const AuthenticatedCoursesCourseIdRoute =
     path: '/courses/$courseId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedConceptMapCourseIdRoute =
+  AuthenticatedConceptMapCourseIdRouteImport.update({
+    id: '/concept-map/$courseId',
+    path: '/concept-map/$courseId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -73,6 +80,7 @@ export interface FileRoutesByFullPath {
   '/campus': typeof AuthenticatedCampusRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/concept-map/$courseId': typeof AuthenticatedConceptMapCourseIdRoute
   '/courses/$courseId': typeof AuthenticatedCoursesCourseIdRoute
   '/lessons/$lessonId': typeof AuthenticatedLessonsLessonIdRoute
 }
@@ -83,6 +91,7 @@ export interface FileRoutesByTo {
   '/campus': typeof AuthenticatedCampusRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/concept-map/$courseId': typeof AuthenticatedConceptMapCourseIdRoute
   '/courses/$courseId': typeof AuthenticatedCoursesCourseIdRoute
   '/lessons/$lessonId': typeof AuthenticatedLessonsLessonIdRoute
 }
@@ -95,6 +104,7 @@ export interface FileRoutesById {
   '/_authenticated/campus': typeof AuthenticatedCampusRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
+  '/_authenticated/concept-map/$courseId': typeof AuthenticatedConceptMapCourseIdRoute
   '/_authenticated/courses/$courseId': typeof AuthenticatedCoursesCourseIdRoute
   '/_authenticated/lessons/$lessonId': typeof AuthenticatedLessonsLessonIdRoute
 }
@@ -107,6 +117,7 @@ export interface FileRouteTypes {
     | '/campus'
     | '/dashboard'
     | '/settings'
+    | '/concept-map/$courseId'
     | '/courses/$courseId'
     | '/lessons/$lessonId'
   fileRoutesByTo: FileRoutesByTo
@@ -117,6 +128,7 @@ export interface FileRouteTypes {
     | '/campus'
     | '/dashboard'
     | '/settings'
+    | '/concept-map/$courseId'
     | '/courses/$courseId'
     | '/lessons/$lessonId'
   id:
@@ -128,6 +140,7 @@ export interface FileRouteTypes {
     | '/_authenticated/campus'
     | '/_authenticated/dashboard'
     | '/_authenticated/settings'
+    | '/_authenticated/concept-map/$courseId'
     | '/_authenticated/courses/$courseId'
     | '/_authenticated/lessons/$lessonId'
   fileRoutesById: FileRoutesById
@@ -203,6 +216,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCoursesCourseIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/concept-map/$courseId': {
+      id: '/_authenticated/concept-map/$courseId'
+      path: '/concept-map/$courseId'
+      fullPath: '/concept-map/$courseId'
+      preLoaderRoute: typeof AuthenticatedConceptMapCourseIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
@@ -211,6 +231,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedCampusRoute: typeof AuthenticatedCampusRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
+  AuthenticatedConceptMapCourseIdRoute: typeof AuthenticatedConceptMapCourseIdRoute
   AuthenticatedCoursesCourseIdRoute: typeof AuthenticatedCoursesCourseIdRoute
   AuthenticatedLessonsLessonIdRoute: typeof AuthenticatedLessonsLessonIdRoute
 }
@@ -220,6 +241,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedCampusRoute: AuthenticatedCampusRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
+  AuthenticatedConceptMapCourseIdRoute: AuthenticatedConceptMapCourseIdRoute,
   AuthenticatedCoursesCourseIdRoute: AuthenticatedCoursesCourseIdRoute,
   AuthenticatedLessonsLessonIdRoute: AuthenticatedLessonsLessonIdRoute,
 }
