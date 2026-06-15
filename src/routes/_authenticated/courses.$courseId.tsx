@@ -1,16 +1,19 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import {
   getCourse, listModules, createModule, deleteModule, updateModule, reorderModules,
-  listLessonsByCourse, createLesson, deleteLesson, updateLesson, reorderLessons,
+  listLessonsByCourse, createLesson, deleteLesson, reorderLessons,
 } from "@/lib/db";
+import { summarizeCourseFn, summarizeModuleFn } from "@/lib/ai.functions";
 import { SortableList } from "@/components/sortable";
+import { SummaryCard } from "@/components/summary-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { ChevronDown, Plus, MoreHorizontal, ArrowLeft, BookOpen, Layers } from "lucide-react";
+import { ChevronDown, Plus, MoreHorizontal, ArrowLeft, BookOpen, Layers, Sparkles } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -51,7 +54,14 @@ function CoursePage() {
 
       <div className="flex items-center justify-between mb-4">
         <h2 className="font-display text-2xl">Módulos</h2>
-        <NewModuleForm courseId={courseId} />
+        <div className="flex gap-2">
+          <Link to="/assistant" search={{ courseId }} className="inline-flex items-center gap-1 text-sm text-burgundy hover:underline px-3"><Sparkles className="h-3.5 w-3.5 text-gold" /> Assistente deste curso</Link>
+          <NewModuleForm courseId={courseId} />
+        </div>
+      </div>
+
+      <div className="mb-6">
+        <CourseSummary courseId={courseId} summary={course?.summary as Record<string, unknown> | null | undefined} />
       </div>
 
       {modules.length === 0 ? (
@@ -70,6 +80,32 @@ function CoursePage() {
           )}
         />
       )}
+    </div>
+  );
+}
+
+function CourseSummary({ courseId, summary }: { courseId: string; summary: Record<string, unknown> | null | undefined }) {
+  const qc = useQueryClient();
+  const fn = useServerFn(summarizeCourseFn);
+  const m = useMutation({
+    mutationFn: () => fn({ data: { courseId } }),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["course", courseId] }); toast.success("Apanhado gerado."); },
+    onError: (e: Error) => toast.error(e.message),
+  });
+  return <SummaryCard title="Gerar Apanhado Geral do Curso" summary={summary ?? null} onGenerate={() => m.mutate()} loading={m.isPending} />;
+}
+
+function ModuleSummary({ moduleId, summary }: { moduleId: string; summary: Record<string, unknown> | null | undefined }) {
+  const qc = useQueryClient();
+  const fn = useServerFn(summarizeModuleFn);
+  const m = useMutation({
+    mutationFn: () => fn({ data: { moduleId } }),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["modules"] }); toast.success("Resumo do módulo gerado."); },
+    onError: (e: Error) => toast.error(e.message),
+  });
+  return (
+    <div className="mb-3">
+      <SummaryCard title="Gerar Resumo do Módulo" summary={summary ?? null} onGenerate={() => m.mutate()} loading={m.isPending} />
     </div>
   );
 }
@@ -141,6 +177,7 @@ function ModuleRow({ module, handle, lessons, courseId }:
           </DropdownMenu>
         </div>
         <CollapsibleContent className="border-t bg-secondary/30 px-3 py-3">
+          <ModuleSummary moduleId={module.id} summary={module.summary as Record<string, unknown> | null | undefined} />
           {lessons.length === 0 && (
             <p className="text-sm text-muted-foreground text-center py-3">Sem aulas. Cria a primeira abaixo.</p>
           )}
