@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, BookOpen, NotebookPen, MessageSquareQuote, Plus, X, StickyNote, Highlighter, FolderOpen, Sparkles } from "lucide-react";
+import { ArrowLeft, BookOpen, NotebookPen, MessageSquareQuote, Plus, X, StickyNote, Highlighter, FolderOpen, Sparkles, ClipboardCheck, Scale, PenLine } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -82,6 +82,9 @@ function LessonPage() {
           <TabsTrigger value="content"><BookOpen className="h-4 w-4 mr-2" /> Matéria</TabsTrigger>
           <TabsTrigger value="notes"><NotebookPen className="h-4 w-4 mr-2" /> Notas</TabsTrigger>
           <TabsTrigger value="reflection"><MessageSquareQuote className="h-4 w-4 mr-2" /> Reflexão Final</TabsTrigger>
+          <TabsTrigger value="test"><ClipboardCheck className="h-4 w-4 mr-2" /> Teste</TabsTrigger>
+          <TabsTrigger value="case"><Scale className="h-4 w-4 mr-2" /> Estudo de Caso</TabsTrigger>
+          <TabsTrigger value="essay"><PenLine className="h-4 w-4 mr-2" /> Mini-Ensaio</TabsTrigger>
           <TabsTrigger value="documents"><FolderOpen className="h-4 w-4 mr-2" /> Documentos</TabsTrigger>
           <TabsTrigger value="summary"><Sparkles className="h-4 w-4 mr-2" /> Resumo IA</TabsTrigger>
         </TabsList>
@@ -94,6 +97,27 @@ function LessonPage() {
         </TabsContent>
         <TabsContent value="reflection">
           <ReflectionTab lesson={lesson} onChange={(reflection) => update.mutate({ reflection })} />
+        </TabsContent>
+        <TabsContent value="test">
+          <RichTextTab
+            value={lesson.test}
+            placeholder="Escreve o teu teste de estudo para esta aula… (perguntas, exercícios, autoavaliação)"
+            onChange={(test) => update.mutate({ test } as Partial<Lesson>)}
+          />
+        </TabsContent>
+        <TabsContent value="case">
+          <RichTextTab
+            value={lesson.case_study}
+            placeholder="Descreve um estudo de caso real onde aplicas os conceitos desta aula…"
+            onChange={(case_study) => update.mutate({ case_study } as Partial<Lesson>)}
+          />
+        </TabsContent>
+        <TabsContent value="essay">
+          <RichTextTab
+            value={lesson.essay}
+            placeholder="Escreve um mini-ensaio sobre o tema desta aula…"
+            onChange={(essay) => update.mutate({ essay } as Partial<Lesson>)}
+          />
         </TabsContent>
         <TabsContent value="documents">
           <DocumentsTab lessonId={lesson.id} courseId={lesson.course_id} />
@@ -144,6 +168,20 @@ function ContentTab({ lesson, onChange }: { lesson: Lesson; onChange: (json: unk
         timer.current = setTimeout(() => onChange(json), 600);
       }}
       placeholder="Começa a escrever as tuas notas de aula…"
+    />
+  );
+}
+
+function RichTextTab({ value, placeholder, onChange }: { value: unknown; placeholder: string; onChange: (json: unknown) => void }) {
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  return (
+    <TiptapEditor
+      value={value}
+      onChange={(json) => {
+        if (timer.current) clearTimeout(timer.current);
+        timer.current = setTimeout(() => onChange(json), 600);
+      }}
+      placeholder={placeholder}
     />
   );
 }
